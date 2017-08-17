@@ -11,7 +11,7 @@ deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-updates main restricted unive
 deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-backports main restricted universe multiverse \n\
 deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-security main restricted universe multiverse" > /etc/apt/sources.list
 
-RUN RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends\ 
+RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends\ 
   bc \
   git \
   unzip \
