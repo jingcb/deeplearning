@@ -30,9 +30,10 @@ ENV CLONE_TAG=master
 
 RUN cd /opt
 RUN git clone https://github.com/alexgkendall/caffe-segnet.git && \
+    cd caffe-segnet && \
     for req in $(cat python/requirements.txt) pydot; do pip install $req; done && \
-    mkdir build && cd build && \
-    cmake -DCPU_ONLY=1 -DCMAKE_BUILD_TYPE=Release .. && \
+    cp Makefile.config.example Makefile.config && \
+   echo "CPU_ONLY := 1" >> Makefile.config && \
     make all -j"$(nproc)"
 
 ENV PYCAFFE_ROOT $CAFFE_ROOT/python
