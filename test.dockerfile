@@ -1,8 +1,5 @@
 FROM ubuntu:14.04
-
-MAINTAINER sshuair<sshuair@gmail.com>
-
-
+MAINTAINER caffe-maint@googlegroups.com
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -24,6 +21,31 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python-pip \
         python-scipy && \
     rm -rf /var/lib/apt/lists/*
+
+ENV CAFFE_ROOT=/opt/caffe-segnet
+WORKDIR $CAFFE_ROOT
+
+# FIXME: clone a specific git tag and use ARG instead of ENV once DockerHub supports this.
+ENV CLONE_TAG=master
+
+RUN git clone -b ${CLONE_TAG} --depth 1 https://github.com/alexgkendall/caffe-segnet.git . && \
+    for req in $(cat python/requirements.txt) pydot; do pip install $req; done && \
+    mkdir build && cd build && \
+    cmake -DCPU_ONLY=1 -DCMAKE_BUILD_TYPE=Release .. && \
+    make all -j"$(nproc)"
+
+ENV PYCAFFE_ROOT $CAFFE_ROOT/python
+ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
+ENV PATH $CAFFE_ROOT/build/tools:$PYCAFFE_ROOT:$PATH
+RUN echo "$CAFFE_ROOT/build/lib" >> /etc/ld.so.conf.d/caffe.conf && ldconfig
+
+WORKDIR /workspace
+
+
+FROM bvlc/caffe:cpu
+
+MAINTAINER sshuair<sshuair@gmail.com>
+
 # version settings
 # ARG PYTHON_VERSION=3.5
 ARG TENSORFLOW_ARCH=cpu
@@ -78,7 +100,7 @@ RUN apt-get update && apt-get --fix-missing install -y python-mapnik && \
 # install gdal  
 RUN add-apt-repository -y ppa:ubuntugis/ppa && \ 
     apt update && \ 
-    apt-get install gdal-bin libgdal-dev python-gdal && \
+    apt-get install -y --no-install-recommends gdal-bin libgdal-dev python-gdal && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -138,66 +160,3 @@ WORKDIR "/workdir"
 
 CMD ["/run_jupyter.sh", "--allow-root" ]
 
-
-ENV PYTHONPATH /opt/caffe-segnet/python
-ENV PATH $PATH:/opt/caffe-segnet/.build_release/tools
-
-# faster apt source
-RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt trusty main restricted universe multiverse \n\
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-updates main restricted universe multiverse \n\
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-backports main restricted universe multiverse \n\
-deb mirror://mirrors.ubuntu.com/mirrors.txt trusty-security main restricted universe multiverse" > /etc/apt/sources.list
-
-RUN apt-get update && apt-get install -y \
-  bc \
-  git \
-  unzip \
-  wget \
-  curl \
-
-  # for caffe
-  libprotobuf-dev \
-  libleveldb-dev \
-  libsnappy-dev \
-  libopencv-dev \
-  libhdf5-serial-dev \
-  protobuf-compiler \
-  libatlas-base-dev \
-  libgflags-dev \
-  libgoogle-glog-dev \
-  liblmdb-dev \
-  libboost-all-dev \
-
-  # for caffe python
-  python-dev \
-  python-pip \
-  python-numpy \
-  # for scipy
-  gfortran \
-  # fix: InsecurePlatformWarning: A true SSLContext object is not available.
-  libffi-dev \
-  libssl-dev \
-
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/
-
-RUN cd /opt && git clone https://github.com/alexgkendall/caffe-segnet.git && cd caffe-segnet
-
-WORKDIR /opt/caffe-segnet
-
-# Build Caffe core
-RUN cp Makefile.config.example Makefile.config && \
-    echo "CPU_ONLY := 1" >> Makefile.config && \
-    make -j"$(nproc)" all
-
-# Install python deps
-RUN pip install --upgrade pip && \
-    # fix: InsecurePlatformWarning: A true SSLContext object is not available.
-    pip install pyopenssl ndg-httpsclient pyasn1 && \
-    for req in $(cat python/requirements.txt); do pip install $req; done
-
-# Build Caffe python
-RUN make -j"$(nproc)" pycaffe
-
-# test + run tests
-RUN make -j"$(nproc)" test
