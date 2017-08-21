@@ -2,8 +2,15 @@ FROM sshuair/dl-satellite:caffe-py2-cpu
 
 MAINTAINER takuya.wakisaka@moldweorp.com
 
-ENV PYTHONPATH /opt/caffe-segnet/python
-ENV PATH $PATH:/opt/caffe-segnet/.build_release/tools
+
+ENV CAFFE_ROOT=/opt/caffe
+WORKDIR $CAFFE_ROOT
+ENV PYCAFFE_ROOT $CAFFE_ROOT/python
+ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
+ENV PATH $CAFFE_ROOT/build/tools:$PYCAFFE_ROOT:$PATH
+
+
+
 
 # faster apt source
 RUN echo "deb mirror://mirrors.ubuntu.com/mirrors.txt trusty main restricted universe multiverse \n\
@@ -53,6 +60,7 @@ WORKDIR /opt/caffe-segnet
 # Build Caffe core
 RUN cp Makefile.config.example Makefile.config && \
     echo "CPU_ONLY := 1" >> Makefile.config && \
+
     make -j"$(nproc)" all
 
 # Install python deps
