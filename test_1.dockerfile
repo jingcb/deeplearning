@@ -52,6 +52,8 @@ RUN wget http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz && \
 
 
 # install python package
+RUN pip install pip --upgrade
+
 RUN pip --no-cache-dir install \
         setuptools
 # note: due to pytorch 0.2 rely on numpy 1.13, it's have to upgrade numpy from 1.11.0 to 1.13.1
