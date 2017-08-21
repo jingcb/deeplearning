@@ -42,10 +42,6 @@ RUN echo "$CAFFE_ROOT/build/lib" >> /etc/ld.so.conf.d/caffe.conf && ldconfig
 WORKDIR /workspace
 
 
-FROM bvlc/caffe:cpu
-
-MAINTAINER sshuair<sshuair@gmail.com>
-
 # version settings
 # ARG PYTHON_VERSION=3.5
 ARG TENSORFLOW_ARCH=cpu
