@@ -1,4 +1,4 @@
-FROM sshuair/sshuair/dl-satellite:caffe-py2-cpu
+FROM sshuair/dl-satellite:caffe-py2-cpu
 
 MAINTAINER takuya.wakisaka@moldweorp.com
 
