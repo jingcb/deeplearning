@@ -41,8 +41,8 @@ RUN apt-get update && apt-get --fix-missing install -y python-mapnik && \
 
 
 # install gdal  
-RUN wget http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz
-tar xvfz gdal-1.11.0.tar.gz && \
+RUN wget http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz && \
+  tar xvfz gdal-1.11.0.tar.gz && \
   cd gdal-1.11.0 && \
   ./configure --with-python && \
   make && \
