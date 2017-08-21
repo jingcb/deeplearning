@@ -38,8 +38,6 @@ RUN apt-get update --fix-missing && apt-get install -y --no-install-recommends\
   # for scipy
   gfortran \
   # fix: InsecurePlatformWarning: A true SSLContext object is not available.
-  libffi-dev \
-  libssl-dev \
   build-essential \
   software-properties-common \
   cmake \
